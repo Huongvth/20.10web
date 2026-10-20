@@ -1,0 +1,1248 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1720">
+<title>Secret Code | 20.10</title>
+
+<style>
+:root {
+  --bg: #0b1720;
+  --panel: #10232c;
+  --panel2: #142c35;
+  --mint: #b7f4dd;
+  --green: #83d9bb;
+  --blue: #b8dff2;
+  --text: #e1f3ef;
+  --muted: #91ada9;
+  --line: #b7f4dd22;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 50% 40%, #183b40 0%, transparent 60%),
+    var(--bg);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+button, input { font: inherit; }
+button { color: inherit; }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 4px;
+}
+
+#matrix, #fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#matrix { z-index: 0; opacity: .42; }
+#fx { z-index: 5; }
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .13;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    #b7f4dd0b 4px
+  );
+}
+
+.glow {
+  position: fixed;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: .12;
+  pointer-events: none;
+}
+
+.glow.a { background: #8cf2cc; top: -100px; left: -90px; }
+.glow.b { background: #8fcff5; right: -100px; bottom: -100px; }
+
+header {
+  position: relative;
+  z-index: 8;
+  padding: 23px 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  background: #0b17207a;
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  font: 11px monospace;
+  letter-spacing: .16em;
+  color: var(--mint);
+}
+
+.logo span { color: var(--muted); }
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font: 10px monospace;
+  letter-spacing: .1em;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--green);
+  animation: blink 1.7s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: .3; }
+}
+
+main {
+  position: relative;
+  z-index: 2;
+  width: min(680px, 100%);
+  min-height: calc(100svh - 100px);
+  margin: auto;
+  padding: 55px 22px 45px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.view {
+  width: 100%;
+  animation: reveal .7s ease both;
+}
+
+.hidden { display: none !important; }
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.terminal-label {
+  color: var(--green);
+  font: 11px monospace;
+  letter-spacing: .12em;
+  margin-bottom: 17px;
+}
+
+.terminal-label::before {
+  content: "> ";
+  color: var(--blue);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 58px);
+  font-weight: 500;
+  line-height: 1.14;
+  letter-spacing: -.045em;
+}
+
+h1 em {
+  color: var(--mint);
+  font-style: normal;
+}
+
+.description {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.9;
+  margin: 17px 0 30px;
+}
+
+.panel {
+  padding: clamp(20px, 5vw, 34px);
+  border: 1px solid #b7f4dd26;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #132a34ed, #0d1e27eF);
+  box-shadow: 0 20px 80px #00000025;
+}
+
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 15px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font: 10px monospace;
+  letter-spacing: .08em;
+}
+
+.field { margin-bottom: 22px; }
+
+.field label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.field label span {
+  color: var(--green);
+  font-family: monospace;
+}
+
+input, select {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  color: var(--text);
+  background: #08171f;
+  border: 1px solid #b7f4dd2c;
+  border-radius: 7px;
+}
+
+input::placeholder { color: #6e8989; }
+
+select option {
+  background: #10232c;
+  color: var(--text);
+}
+
+button {
+  cursor: pointer;
+  transition: transform .2s, background .2s, border-color .2s;
+}
+
+button:hover { transform: translateY(-2px); }
+
+.primary {
+  width: 100%;
+  min-height: 49px;
+  border: 1px solid var(--mint);
+  border-radius: 7px;
+  color: #0b201d;
+  background: var(--mint);
+  font-weight: 650;
+  font-size: 13px;
+}
+
+.primary:hover { background: #d4ffed; }
+
+.small-note {
+  margin-top: 16px;
+  text-align: center;
+  font: 10px/1.8 monospace;
+  color: var(--muted);
+}
+
+.error {
+  display: none;
+  margin-top: 14px;
+  color: #ffc1b9;
+  font-size: 12px;
+}
+
+.error.show { display: block; }
+
+.hero { text-align: center; }
+
+.hero h1 { font-size: clamp(36px, 8vw, 62px); }
+
+.hero .description { margin-bottom: 23px; }
+
+.recipient-chip {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 8px 14px;
+  color: var(--mint);
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: #b7f4dd09;
+  font: 11px monospace;
+}
+
+.envelope-wrap {
+  width: min(330px, 85vw);
+  height: 225px;
+  margin: 38px auto 15px;
+  perspective: 1000px;
+}
+
+.envelope {
+  position: relative;
+  height: 185px;
+  margin-top: 30px;
+  cursor: pointer;
+  filter: drop-shadow(0 18px 24px #00000040);
+}
+
+.env-back {
+  position: absolute;
+  inset: 0;
+  background: #396b69;
+  border-radius: 5px;
+}
+
+.letter {
+  position: absolute;
+  z-index: 2;
+  left: 6%;
+  top: 2%;
+  width: 88%;
+  height: 88%;
+  padding: 24px 10px;
+  background: #e4f4e9;
+  color: #244b47;
+  text-align: center;
+  transition: top .9s ease, transform .9s ease;
+}
+
+.letter .mini {
+  font: 10px monospace;
+  letter-spacing: .16em;
+}
+
+.letter .symbol {
+  margin-top: 15px;
+  font-size: 24px;
+}
+
+.env-front {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: #477e7a;
+  clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+}
+
+.env-flap {
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 auto;
+  height: 63%;
+  background: #78aaa0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform .7s ease;
+}
+
+.seal {
+  position: absolute;
+  z-index: 6;
+  top: 55%;
+  left: calc(50% - 22px);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #c2f2df;
+  color: #285c53;
+  font-size: 22px;
+  box-shadow: 0 0 20px #b7f4dd33;
+  transform: translateY(-50%);
+  transition: .3s;
+}
+
+.envelope.open .env-flap { transform: rotateX(180deg); }
+
+.envelope.open .letter {
+  top: -42%;
+  transform: translateY(-5px);
+}
+
+.envelope.open .seal {
+  opacity: 0;
+  transform: translateY(-50%) scale(.4);
+}
+
+.hint {
+  color: var(--muted);
+  font: 10px monospace;
+  letter-spacing: .12em;
+}
+
+.result {
+  display: none;
+  margin-top: 30px;
+  text-align: left;
+  animation: reveal .9s ease both;
+}
+
+.result.show { display: block; }
+
+.result-card {
+  padding: clamp(22px, 5vw, 34px);
+  border: 1px solid #b7f4dd30;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #142d35f5, #0c1c25f5);
+  box-shadow: 0 20px 70px #00000030;
+}
+
+.result-kicker {
+  color: var(--green);
+  font: 10px monospace;
+  letter-spacing: .17em;
+}
+
+.result h2 {
+  margin: 17px 0 20px;
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 500;
+  color: var(--mint);
+  line-height: 1.35;
+}
+
+.result p {
+  margin: 0;
+  color: #c2d9d6;
+  font-size: 14px;
+  line-height: 2;
+  white-space: pre-line;
+}
+
+.result .signature {
+  margin-top: 23px;
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.secondary {
+  flex: 1;
+  padding: 12px 10px;
+  border: 1px solid #b7f4dd35;
+  border-radius: 6px;
+  background: #10252d;
+  color: var(--mint);
+  font-size: 12px;
+}
+
+.secondary:hover { border-color: var(--mint); }
+
+footer {
+  position: relative;
+  z-index: 2;
+  padding: 0 18px 25px;
+  text-align: center;
+  color: #718f8d;
+  font: 10px/1.8 monospace;
+  letter-spacing: .08em;
+}
+
+@media (max-width: 480px) {
+  header { padding: 19px 16px; }
+  .logo { font-size: 10px; letter-spacing: .08em; }
+  .status { font-size: 9px; }
+  main { padding: 43px 18px 35px; }
+  .description { font-size: 13px; }
+  .panel { padding: 21px 17px; }
+  .panel-top { font-size: 9px; }
+  .envelope-wrap { margin-top: 30px; }
+  .result-actions { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<canvas id="matrix" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="scanlines"></div>
+<div class="glow a"></div>
+<div class="glow b"></div>
+
+<header>
+  <div class="logo">SECRET<span>_</span>CODE <span>// 20.10</span></div>
+  <div class="status"><span class="dot"></span> vth with you</div>
+</header>
+
+<main>
+  <!-- STEP 1: REQUIRED INFORMATION -->
+  <section class="view" id="welcome">
+    <div class="terminal-label">ALWAYS FOR YOU</div>
+    <h1>Something just for you<br></h1>
+    <p class="description">
+      Không phải điều gì lớn lao. Chỉ là một lời nhắn nhỏ, dành riêng cho người đang đọc những dòng này.<br>
+    </p>
+
+    <form class="panel" id="userForm">
+      <div class="panel-top">
+        <span>Yêu bản thân theo cách của bạn</span>
+      </div>
+
+      <div class="field">
+        <label for="userName"><span>01 </span> Tên của bạn *</label>
+        <input
+          id="userName"
+          name="userName"
+          type="text"
+          maxlength="40"
+          placeholder="Nhập tên bạn..."
+          autocomplete="given-name"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="gender"><span>02 </span> Giới tính *</label>
+        <select id="gender" name="gender" required>
+          <option value="">-- Chọn một lựa chọn --</option>
+          <option value="female">Nữ</option>
+          <option value="male">Nam</option>
+        </select>
+      </div>
+
+      <button class="primary" type="submit">
+        XÁC NHẬN & TIẾP TỤC ↗
+      </button>
+
+      <div class="error" id="formError" role="alert">
+        Vui lòng nhập tên và chọn giới tính để tiếp tục.
+      </div>
+
+      <div class="small-note">
+        Some things are just for you<br>
+        From @vth
+      </div>
+    </form>
+  </section>
+
+  <!-- STEP 2: SECRET ENVELOPE -->
+  <section class="view hidden hero" id="experience">
+    <div class="terminal-label">Xin-chào  An-nhơng-ha-sê-yô  Kon-ni-chi-wa  Ha-lô </div>
+    <h1>A little<br><em>message.</em></h1>
+
+    <p class="description">
+      Dành riêng cho bạn, <span id="displayName"></span>.<br>
+      Có một điều nhỏ xíu nằm trong chiếc phong thư này. 
+    </p>
+
+    <div class="recipient-chip" id="userChip"></div>
+
+    <div class="envelope-wrap">
+      <div
+        class="envelope"
+        id="envelope"
+        role="button"
+        tabindex="0"
+        aria-label="Mở phong thư"
+        aria-expanded="false"
+      >
+        <div class="env-back"></div>
+        <div class="letter">
+          <div class="mini">A MESSAGE FOR YOU</div>
+          <div style="margin-top:12px;font-size:13px">
+            Một chút bình yên.
+          </div>
+          <div class="symbol">✧</div>
+        </div>
+        <div class="env-front"></div>
+        <div class="env-flap"></div>
+        <div class="seal">✦</div>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">[ Chạm để mở thư nhé! ]</div>
+
+    <section class="result" id="result" aria-live="polite">
+      <div class="result-card">
+        <div class="result-kicker" id="resultKicker">
+          From @vth
+        </div>
+        <h2 id="wishTitle"></h2>
+        <p id="wishBody"></p>
+        <div class="signature" id="wishEnd"></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="secondary" id="anotherWish" type="button">
+          ↻ Nhận lời chúc khác
+        </button>
+        <button class="secondary" id="copyWish" type="button">
+          ▣ Sao chép lời chúc
+        </button>
+      </div>
+      <div class="small-note" id="actionStatus" aria-live="polite"></div>
+    </section>
+  </section>
+</main>
+
+<footer>
+  <div>A SMALL REMINDER TO SPREAD KINDNESS · 20 OCTOBER</div>
+</footer>
+
+<script>
+"use strict";
+
+// =========================================
+// 1. RANDOM WISH DATABASE: 30 MESSAGES
+// =========================================
+
+const wishes = [
+  {
+    title: "Mong bạn luôn được dịu dàng đối xử.",
+    body: "Chúc bạn luôn gặp những người biết lắng nghe, những nơi khiến mình thấy bình yên và những điều làm trái tim trở nên nhẹ nhõm. Mong bạn luôn có đủ dũng khí để theo đuổi điều mình yêu thích, và đủ bình thản để bỏ qua những điều không thuộc về mình.",
+    end: "Chúc bạn một ngày 20/10 thật an yên. ♡"
+  },
+  {
+    title: "Bạn xứng đáng với những điều tốt đẹp.",
+    body: "Mong những nỗ lực thầm lặng của bạn đều được nhìn thấy, những tử tế bạn trao đi đều tìm được đường trở về. Chúc bạn luôn tự tin với lựa chọn của mình và không bao giờ quên rằng bản thân cũng xứng đáng được yêu thương.",
+    end: "Luôn tin vào những điều đẹp đẽ nhé. ✦"
+  },
+  {
+    title: "Chúc bạn có thật nhiều lý do để mỉm cười.",
+    body: "Mong mỗi buổi sáng đều có một điều đáng mong chờ, mỗi ngày bận rộn đều có một khoảng nghỉ dễ chịu, và mỗi tối đều có thể kết thúc bằng cảm giác rằng hôm nay mình đã cố gắng đủ rồi.",
+    end: "Happy Vietnamese Women's Day. 🌿"
+  },
+  {
+    title: "Mong ước mơ của bạn nở hoa.",
+    body: "Chúc những kế hoạch bạn đang ấp ủ dần thành hiện thực. Nếu con đường phía trước có lúc chưa rõ ràng, mong bạn vẫn đủ kiên nhẫn để đi tiếp, đủ linh hoạt để đổi hướng và đủ tin tưởng vào chính mình.",
+    end: "Một hành trình thật rực rỡ đang chờ bạn. ✧"
+  },
+  {
+    title: "Chúc bạn luôn là chính mình.",
+    body: "Không cần phải giống bất kỳ ai, cũng chẳng cần đáp ứng mọi kỳ vọng. Mong bạn luôn tìm được phiên bản khiến mình hạnh phúc nhất, được tự do lựa chọn và được trân trọng vì chính con người thật của mình.",
+    end: "Bạn theo cách riêng của bạn đã rất tuyệt rồi. ♡"
+  },
+  {
+    title: "Một ngày thật nhẹ nhàng dành cho bạn.",
+    body: "Chúc bạn bớt những ngày phải vội vàng, thêm những buổi chiều thong thả, thêm những cuộc trò chuyện chân thành và thêm những khoảnh khắc nhỏ khiến mình muốn lưu giữ thật lâu.",
+    end: "Mong bình yên luôn tìm được đường đến bạn. ☁"
+  },
+  {
+    title: "Chúc bạn vừa mạnh mẽ vừa hạnh phúc.",
+    body: "Mong bạn luôn có sự mạnh mẽ để bước qua thử thách, nhưng cũng có một nơi đủ an toàn để không phải lúc nào cũng tỏ ra mạnh mẽ. Chúc bạn được sẻ chia, được thấu hiểu và được nghỉ ngơi khi cần.",
+    end: "Bạn không cần phải làm mọi thứ một mình. 🌱"
+  },
+  {
+    title: "Chúc bạn gặp đúng người, đúng thời điểm.",
+    body: "Mong bạn gặp những người mang đến sự chân thành, những cơ hội giúp mình trưởng thành và những khoảnh khắc khiến bạn nhận ra rằng cuộc sống vẫn luôn có nhiều điều đáng yêu.",
+    end: "Chúc những điều tử tế luôn đồng hành cùng bạn. ♡"
+  },
+  {
+    title: "Mong bạn luôn có thời gian cho mình.",
+    body: "Giữa những công việc, trách nhiệm và dự định, mong bạn vẫn nhớ dành một chút thời gian cho những điều mình yêu. Đọc một cuốn sách, uống một ly nước ngon, đi dạo dưới trời xanh — đôi khi hạnh phúc chỉ đơn giản như vậy.",
+    end: "Đừng quên chăm sóc chính mình nhé. 🌿"
+  },
+  {
+    title: "Chúc mọi cố gắng đều có ý nghĩa.",
+    body: "Có những thành quả đến ngay, có những điều cần thêm thời gian. Mong bạn luôn đủ kiên nhẫn với hành trình của mình, biết tự hào về từng bước nhỏ và không đánh giá bản thân chỉ bằng một ngày chưa như ý.",
+    end: "Từng bước một, bạn vẫn đang tiến về phía trước. ✦"
+  },
+  {
+    title: "Chúc bạn có một trái tim thật bình yên.",
+    body: "Mong bạn không phải giữ mãi những điều khiến mình mệt mỏi, không phải lo lắng quá lâu về những chuyện chưa đến. Chúc bạn tìm được sự cân bằng, niềm vui giản dị và sự bình yên từ bên trong.",
+    end: "Gửi bạn một ngày nhiều an lành. ♡"
+  },
+  {
+    title: "Mong cuộc sống dành cho bạn nhiều bất ngờ đẹp.",
+    body: "Một tin vui bất ngờ, một lời hỏi thăm đúng lúc, một cơ hội mới hay một buổi chiều trời thật đẹp — mong những điều nho nhỏ ấy thường xuyên ghé thăm cuộc sống của bạn.",
+    end: "May your days be full of little wonders. ✨"
+  },
+  {
+    title: "Chúc bạn luôn được lắng nghe.",
+    body: "Mong quanh bạn luôn có những người sẵn sàng lắng nghe mà không vội phán xét, chia sẻ mà không tính toán và đồng hành mà không khiến bạn phải trở thành một ai khác.",
+    end: "Bạn luôn xứng đáng với sự chân thành. 🌱"
+  },
+  {
+    title: "Chúc bạn tự tin với những lựa chọn của mình.",
+    body: "Không phải con đường nào cũng cần giống nhau. Mong bạn đủ tin vào điều mình chọn, đủ bình tĩnh khi gặp khó khăn và đủ cởi mở để đón nhận những hướng đi mới.",
+    end: "Cứ bước theo nhịp điệu của riêng bạn. ✦"
+  },
+  {
+    title: "Mong những ngày bận rộn cũng có niềm vui.",
+    body: "Chúc công việc thuận lợi, những kế hoạch suôn sẻ, những cuộc họp bớt căng thẳng và những thành quả xứng đáng với công sức bạn đã bỏ ra. Mong mỗi ngày đều có ít nhất một điều khiến bạn thấy vui.",
+    end: "Chúc bạn luôn tràn đầy cảm hứng. ☘"
+  },
+  {
+    title: "Chúc bạn có thêm nhiều trải nghiệm đáng nhớ.",
+    body: "Mong bạn có dịp đi đến những nơi mới, học được những điều thú vị, thử những điều từng ngần ngại và gặp những người khiến thế giới của mình trở nên rộng mở hơn.",
+    end: "Một năm thật nhiều khám phá đang chờ bạn. ✧"
+  },
+  {
+    title: "Chúc niềm vui ở lại lâu hơn.",
+    body: "Mong những ngày vui không chỉ là những dịp đặc biệt, mà còn xuất hiện trong những điều bình thường nhất. Một món ăn yêu thích, một tin nhắn dễ thương hay một buổi tối được nghỉ ngơi trọn vẹn.",
+    end: "Mong bạn luôn có điều để mong chờ. ♡"
+  },
+  {
+    title: "Chúc bạn luôn được trân trọng.",
+    body: "Mong những đóng góp của bạn được ghi nhận, ý kiến của bạn được lắng nghe và sự hiện diện của bạn được trân trọng. Chúc bạn có những mối quan hệ mà ở đó sự tôn trọng luôn đến từ cả hai phía.",
+    end: "Bạn có giá trị theo cách rất riêng. 🌿"
+  },
+  {
+    title: "Mong bạn luôn giữ được sự tò mò.",
+    body: "Chúc bạn vẫn hào hứng trước những điều chưa biết, vẫn sẵn sàng học hỏi và không ngại bắt đầu lại. Mỗi trải nghiệm mới đều có thể mở ra một cánh cửa thú vị.",
+    end: "Keep growing, keep glowing. ✦"
+  },
+  {
+    title: "Chúc bạn có những người bạn thật tốt.",
+    body: "Mong bạn luôn có người cùng cười khi vui, cùng trò chuyện khi cần và tôn trọng cả những lúc bạn muốn yên tĩnh. Tình bạn chân thành đôi khi chính là món quà quý giá nhất.",
+    end: "Mong những kết nối đẹp luôn ở bên bạn. ♡"
+  },
+  {
+    title: "Chúc bạn không bỏ quên những niềm vui nhỏ.",
+    body: "Mong bạn vẫn tìm được niềm vui trong một tách trà, một bản nhạc hay, một cuốn sách thú vị hoặc vài phút ngắm trời. Cuộc sống không cần lúc nào cũng thật lớn lao mới đáng yêu.",
+    end: "Hãy tận hưởng những điều giản dị nhé. ☁"
+  },
+  {
+    title: "Chúc bạn có thêm nhiều cơ hội mới.",
+    body: "Mong những cánh cửa phù hợp sẽ mở ra, những ý tưởng hay tìm được nơi phát triển và những người đồng hành tuyệt vời xuất hiện đúng lúc. Chúc bạn luôn sẵn sàng đón nhận điều mới.",
+    end: "May good things find their way to you. ✨"
+  },
+  {
+    title: "Chúc bạn biết tự hào về bản thân.",
+    body: "Hãy nhớ rằng những bước tiến nhỏ cũng đáng được ghi nhận. Mong bạn nhìn lại hành trình đã qua với lòng biết ơn, dịu dàng với những thiếu sót và vui vẻ với những gì mình đã học được.",
+    end: "Bạn đã đi được một chặng đường đáng quý. 🌱"
+  },
+  {
+    title: "Mong bạn luôn có những ngày đầy cảm hứng.",
+    body: "Chúc những ý tưởng mới ghé thăm thường xuyên, những dự định có thêm động lực và mỗi ngày đều mang lại một điều khiến bạn muốn sáng tạo, khám phá hoặc bắt đầu điều gì đó thú vị.",
+    end: "Keep creating your own story. ✦"
+  },
+  {
+    title: "Chúc bạn có một mùa thu thật đẹp.",
+    body: "Mong trời xanh hơn một chút, gió dịu hơn một chút, những cuộc gặp gỡ ấm áp hơn một chút. Và mong bạn có đủ thời gian để tận hưởng vẻ đẹp của những ngày đang trôi qua.",
+    end: "Gửi bạn một chút dịu dàng của mùa thu. 🍃"
+  },
+  {
+    title: "Chúc những điều tử tế quay về với bạn.",
+    body: "Mong sự quan tâm bạn dành cho người khác cũng đến với bạn vào lúc cần nhất. Mong những lời nói chân thành, những hành động nhỏ và những tấm lòng tốt làm cuộc sống của bạn thêm ấm áp.",
+    end: "May kindness always find you. ♡"
+  },
+  {
+    title: "Chúc bạn đủ tự do để lựa chọn hạnh phúc.",
+    body: "Mong bạn có can đảm nói lời đồng ý với những điều mình yêu, nói lời từ chối với những gì không phù hợp và không thấy có lỗi khi dành thời gian cho bản thân.",
+    end: "Hạnh phúc của bạn cũng rất quan trọng. 🌿"
+  },
+  {
+    title: "Chúc bạn có nhiều ngày đáng nhớ.",
+    body: "Mong một ngày nào đó khi nhìn lại, bạn sẽ mỉm cười vì những người đã gặp, những nơi đã đến, những điều đã học và cả những lần mình dũng cảm bước qua điều chưa biết.",
+    end: "Mong hành trình của bạn luôn có những chương thật đẹp. ✧"
+  },
+  {
+    title: "Chúc bạn luôn giữ được sự ấm áp.",
+    body: "Giữa một thế giới đôi khi rất vội, mong bạn vẫn có thể sống chân thành, quan tâm đến người khác và giữ được sự dịu dàng với chính mình. Sự tử tế luôn có ý nghĩa, kể cả khi nó rất nhỏ.",
+    end: "Cảm ơn bạn vì đã làm thế giới dễ thương hơn. ♡"
+  },
+  {
+    title: "Chúc mọi ngày đều có điều để hy vọng.",
+    body: "Dù hôm nay có hoàn hảo hay chưa, mong ngày mai vẫn mang đến một cơ hội mới, một ý tưởng mới và một lý do để bắt đầu. Chúc bạn luôn tìm thấy ánh sáng của riêng mình.",
+    end: "Một ngày tốt lành nữa đang đợi bạn. ☘"
+  },
+  {
+    title: "Một lời chúc nhỏ, thật lòng.",
+    body: "Chúc bạn khỏe mạnh, bình an, làm những điều mình yêu và gặp những người khiến cuộc sống thêm ý nghĩa. Mong bạn không chỉ có một ngày 20/10 vui vẻ, mà còn có thật nhiều ngày bình thường đáng yêu suốt cả năm.",
+    end: "Happy 20/10 — dành riêng cho bạn. ♡"
+  }
+];
+
+const maleMessage = {
+  title: "Một lời nhắn dành cho bạn.",
+  body: "Hôm nay là ngày của phụ nữ, nhưng hi vọng các anh sẽ biến mọi ngày trong năm thành 20/10 — bằng những cái ôm, lời khen và sự quan tâm ngọt ngào. Hãy dành ít thời gian gửi lời chúc, những món quà... tới những người phụ nữ xung quanh nhé!",
+  end: "Một sự quan tâm nhỏ cũng có thể làm ai đó vui cả ngày. 🌿"
+};
+
+// =========================================
+// 2. FORM AND PERSONALIZATION
+// =========================================
+
+const welcome = document.getElementById("welcome");
+const experience = document.getElementById("experience");
+const userForm = document.getElementById("userForm");
+const userName = document.getElementById("userName");
+const gender = document.getElementById("gender");
+const formError = document.getElementById("formError");
+const displayName = document.getElementById("displayName");
+const userChip = document.getElementById("userChip");
+
+const envelope = document.getElementById("envelope");
+const result = document.getElementById("result");
+const hint = document.getElementById("hint");
+const wishTitle = document.getElementById("wishTitle");
+const wishBody = document.getElementById("wishBody");
+const wishEnd = document.getElementById("wishEnd");
+const resultKicker = document.getElementById("resultKicker");
+const actionStatus = document.getElementById("actionStatus");
+
+let currentName = "";
+let currentGender = "";
+let currentWish = null;
+let previousWishIndex = -1;
+let opened = false;
+
+userForm.addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const name = userName.value.trim();
+  const sex = gender.value;
+
+  if (!name || !sex) {
+    formError.classList.add("show");
+    return;
+  }
+
+  currentName = name;
+  currentGender = sex;
+
+  formError.classList.remove("show");
+  displayName.textContent = currentName;
+  userChip.textContent = currentName.toUpperCase() + " thân mến!";
+
+  welcome.classList.add("hidden");
+  experience.classList.remove("hidden");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+function pickWish() {
+  if (currentGender === "male") {
+    currentWish = maleMessage;
+    return;
+  }
+
+  let index = Math.floor(Math.random() * wishes.length);
+
+  // Avoid repeating the previous wish in this session's experience.
+  if (wishes.length > 1 && index === previousWishIndex) {
+    index = (index + 1 + Math.floor(Math.random() * (wishes.length - 1)))
+      % wishes.length;
+  }
+
+  previousWishIndex = index;
+  currentWish = wishes[index];
+}
+
+function renderWish() {
+  pickWish();
+
+  wishTitle.textContent = currentGender === "female"
+    ? currentWish.title
+    : "Gửi bạn một lời nhắn.";
+
+  wishBody.textContent = currentWish.body;
+  wishEnd.textContent = currentWish.end;
+
+  resultKicker.textContent = currentGender === "female"
+    ? "Chúc mừng 20/10, chúc các cô nàng thật vui vẻ hạnh phúc và xinh đẹp nhé! - From @vth"
+    : "From @vth // PASS IT FORWARD";
+
+  actionStatus.textContent = "";
+}
+
+function openEnvelope() {
+  if (opened) return;
+
+  opened = true;
+  envelope.classList.add("open");
+  envelope.setAttribute("aria-expanded", "true");
+  hint.textContent = "@vth with big heart ♡";
+
+  renderWish();
+  result.classList.remove("show");
+
+  setTimeout(() => {
+    result.classList.add("show");
+    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    launchCelebration();
+  }, 550);
+}
+
+envelope.addEventListener("click", openEnvelope);
+
+envelope.addEventListener("keydown", event => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openEnvelope();
+  }
+});
+
+document.getElementById("anotherWish").addEventListener("click", () => {
+  if (currentGender !== "female") {
+    actionStatus.textContent =
+      "Thông điệp này là dành cho bạn. Hãy lan toản yêu thường tới những người phụ nữ quanh mình nhé.";
+    return;
+  }
+
+  renderWish();
+  launchCelebration();
+});
+
+document.getElementById("copyWish").addEventListener("click", async () => {
+  const text = `${wishTitle.textContent}\n\n${wishBody.textContent}\n\n${wishEnd.textContent}`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    actionStatus.textContent = "Đã sao chép lời chúc thành công ✓";
+  } catch (error) {
+    // Fallback for browsers where Clipboard API is unavailable.
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+
+    try {
+      const success = document.execCommand("copy");
+      actionStatus.textContent = success
+        ? "Đã sao chép lời chúc ✓"
+        : "Không sao chép được. Bạn có thể chọn và sao chép nội dung thủ công.";
+    } catch (e) {
+      actionStatus.textContent =
+        "Bạn có thể chọn và sao chép nội dung thủ công.";
+    }
+
+    area.remove();
+  }
+});
+
+// =========================================
+// 3. DIGITAL MATRIX: FALLING 0 AND 1
+// =========================================
+
+const matrix = document.getElementById("matrix");
+const mctx = matrix.getContext("2d");
+
+let mw = 0, mh = 0, columns = [];
+let fontSize = 14;
+let matrixFrame = 0;
+
+function resizeMatrix() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  mw = window.innerWidth;
+  mh = window.innerHeight;
+
+  matrix.width = mw * dpr;
+  matrix.height = mh * dpr;
+  matrix.style.width = mw + "px";
+  matrix.style.height = mh + "px";
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  fontSize = mw < 500 ? 12 : 14;
+  const count = Math.ceil(mw / fontSize);
+  columns = Array.from({ length: count }, () =>
+    Math.random() * (mh / fontSize)
+  );
+}
+
+function drawMatrix() {
+  mctx.clearRect(0, 0, mw, mh);
+  mctx.font = fontSize + "px monospace";
+
+  for (let i = 0; i < columns.length; i++) {
+    const char = Math.random() > .5 ? "0" : "1";
+    const x = i * fontSize;
+    const y = columns[i] * fontSize;
+
+    mctx.fillStyle = Math.random() > .87
+      ? "rgba(184, 223, 242, .8)"
+      : "rgba(151, 226, 199, .56)";
+
+    mctx.fillText(char, x, y);
+
+    if (y > mh && Math.random() > .975) {
+      columns[i] = 0;
+    } else {
+      columns[i] += .22 + Math.random() * .35;
+    }
+  }
+
+  matrixFrame = requestAnimationFrame(drawMatrix);
+}
+
+window.addEventListener("resize", resizeMatrix);
+resizeMatrix();
+drawMatrix();
+
+// =========================================
+// 4. FLOWERS, HEARTS AND DIGITAL FIREWORKS
+// =========================================
+
+const fx = document.getElementById("fx");
+const ctx = fx.getContext("2d");
+
+let w = 0, h = 0;
+let particles = [];
+let celebrationCount = 0;
+
+function resizeFx() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  w = window.innerWidth;
+  h = window.innerHeight;
+  fx.width = w * dpr;
+  fx.height = h * dpr;
+  fx.style.width = w + "px";
+  fx.style.height = h + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+window.addEventListener("resize", resizeFx);
+resizeFx();
+
+function burst(x, y, count = 45) {
+  const colors = ["#b7f4dd", "#b8dff2", "#d9f8e8", "#83d9bb"];
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = .7 + Math.random() * 3;
+
+    particles.push({
+      type: Math.random() > .9 ? "heart" : "spark",
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 45 + Math.random() * 35,
+      size: 1 + Math.random() * 2,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+}
+
+function launchCelebration() {
+  celebrationCount++;
+  burst(w * .5, h * .37, 85);
+
+  setTimeout(() => burst(w * .25, h * .35, 38), 220);
+  setTimeout(() => burst(w * .75, h * .32, 38), 430);
+
+  for (let i = 0; i < 10; i++) {
+    setTimeout(() => createFlower(), i * 90);
+  }
+}
+
+function createFlower() {
+  const el = document.createElement("span");
+  el.textContent = ["✿", "❀", "✧", "♡"][
+    Math.floor(Math.random() * 4)
+  ];
+
+  el.style.position = "fixed";
+  el.style.left = Math.random() * 100 + "vw";
+  el.style.top = "-25px";
+  el.style.zIndex = "4";
+  el.style.pointerEvents = "none";
+  el.style.color = Math.random() > .5 ? "#b7f4dd" : "#b8dff2";
+  el.style.fontSize = (12 + Math.random() * 15) + "px";
+
+  const duration = 5 + Math.random() * 5;
+  const drift = Math.random() * 150 - 75;
+
+  el.animate([
+    { transform: "translate(0, 0) rotate(0deg)", opacity: 0 },
+    { opacity: .85, offset: .12 },
+    {
+      transform: `translate(${drift}px, 110vh) rotate(500deg)`,
+      opacity: 0
+    }
+  ], {
+    duration: duration * 1000,
+    easing: "linear"
+  });
+
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), duration * 1000 + 100);
+}
+
+function drawHeart(x, y, size, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size / 16, size / 16);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, 5);
+  ctx.bezierCurveTo(-14, -4, -9, -13, 0, -5);
+  ctx.bezierCurveTo(9, -13, 14, -4, 0, 5);
+  ctx.fill();
+  ctx.restore();
+}
+
+function animateFx() {
+  ctx.clearRect(0, 0, w, h);
+
+  particles = particles.filter(p => p.life > 0);
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += .012;
+    p.vx *= .99;
+    p.life--;
+
+    ctx.globalAlpha = Math.min(1, p.life / 18);
+    if (p.type === "heart") {
+      drawHeart(p.x, p.y, p.size * 4, p.color);
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateFx);
+}
+
+animateFx();
+
+// Small ambient particles; fireworks only when the letter is opened.
+setInterval(() => {
+  if (opened && Math.random() > .65) {
+    createFlower();
+  }
+}, 1800);
+
+
+
+
+/* =========================================
+   5. MUSIC PLAYER - music.mp3
+   Tự phát nhạc khi người dùng tương tác
+========================================= */
+
+(() => {
+  if (document.getElementById("musicToggle2010")) return;
+
+  const audio = new Audio("./music.mp3");
+  audio.loop = true;
+  audio.volume = 0.5;
+  audio.preload = "auto";
+
+  const button = document.createElement("button");
+  button.id = "musicToggle2010";
+  button.type = "button";
+  button.textContent = "♪ Bật nhạc";
+  button.setAttribute("aria-label", "Bật hoặc tắt nhạc");
+  button.setAttribute("aria-pressed", "false");
+
+  Object.assign(button.style, {
+    position: "fixed",
+    right: "16px",
+    bottom: "16px",
+    zIndex: "9999",
+    border: "1px solid #b7f4dd66",
+    borderRadius: "30px",
+    background: "#10232c",
+    color: "#b7f4dd",
+    padding: "12px 16px",
+    font: "12px monospace",
+    cursor: "pointer",
+    boxShadow: "0 4px 20px #0003"
+  });
+
+  document.body.appendChild(button);
+
+  let started = false;
+  let manuallyStopped = false;
+
+  async function playMusic() {
+    try {
+      await audio.play();
+
+      started = true;
+      manuallyStopped = false;
+
+      button.textContent = "♪ Tắt nhạc";
+      button.setAttribute("aria-pressed", "true");
+    } catch (error) {
+      console.log("Không thể phát nhạc:", error);
+      button.textContent = "♪ Bật nhạc";
+      button.setAttribute("aria-pressed", "false");
+    }
+  }
+
+  function stopMusic() {
+    audio.pause();
+    manuallyStopped = true;
+
+    button.textContent = "♪ Bật nhạc";
+    button.setAttribute("aria-pressed", "false");
+  }
+
+  // Nhấn nút để bật/tắt nhạc thủ công
+  button.addEventListener("click", async () => {
+    if (audio.paused) {
+      await playMusic();
+    } else {
+      stopMusic();
+    }
+  });
+
+  // Thử tự phát khi trang tải xong
+  window.addEventListener("load", () => {
+    playMusic();
+  });
+
+  // Tự phát khi người dùng tương tác lần đầu ở bất kỳ đâu
+  function firstInteraction() {
+    if (started || manuallyStopped) return;
+
+    playMusic();
+  }
+
+  const events = [
+    "pointerdown",
+    "keydown",
+    "touchstart",
+    "click"
+  ];
+
+  events.forEach((eventName) => {
+    document.addEventListener(eventName, firstInteraction, {
+      once: true,
+      passive: true
+    });
+  });
+
+  // Nếu phát nhạc bị chặn lúc đầu, vẫn cho phép thử lại
+  audio.addEventListener("error", () => {
+    console.error(
+      "Không tải được music.mp3. Hãy kiểm tra đường dẫn file."
+    );
+  });
+})();
+
+
+
+</script>
+</body>
+</html>
